@@ -46,7 +46,7 @@
       },
       {
         "tab": "API reference",
-        "openapi": "https://api.passform.io/openapi.json"
+        "openapi": "openapi.json"
       }
     ],
     "global": {
