@@ -1,0 +1,119 @@
+---
+title: "n8n"
+description: "Use n8n HTTP Request nodes to create and manage passes with the Passform API"
+icon: "diagram-project"
+---
+
+Passform works with n8n via the built-in **HTTP Request** node. No custom node required.
+
+## Set up credentials
+
+Store your API key as an n8n credential so you don't repeat it across nodes.
+
+<Steps>
+  <Step title="Create a Header Auth credential">
+    In n8n, go to **Credentials → Add credential** and select **Header Auth**.
+
+    | Field | Value |
+    |-------|-------|
+    | Name | `Authorization` |
+    | Value | `Bearer YOUR_API_KEY` |
+  </Step>
+  <Step title="Use it in HTTP Request nodes">
+    In each HTTP Request node, set **Authentication** to **Predefined Credential Type → Header Auth** and select the credential you created.
+  </Step>
+</Steps>
+
+## Common operations
+
+### Upsert a pass
+
+Creates or updates a pass for a given template and pass ID.
+
+**HTTP Request node settings:**
+
+| Setting | Value |
+|---------|-------|
+| Method | `POST` |
+| URL | `https://api.passform.io/v1/pass/{{ $json.templateId }}/{{ $json.passId }}` |
+| Body Content Type | JSON |
+
+**Example body:**
+```json
+{
+  "voided": false,
+  "expiry": "2026-12-31T23:59:59Z",
+  "fields": [
+    { "key": "points", "label": "Points", "value": "150" }
+  ]
+}
+```
+
+The response includes `appleUrl`, `googleUrl`, and `webUrl` — use these to send the pass to your user.
+
+---
+
+### Get a pass
+
+| Setting | Value |
+|---------|-------|
+| Method | `GET` |
+| URL | `https://api.passform.io/v1/pass/{{ $json.templateId }}/{{ $json.passId }}` |
+
+---
+
+### Send a notification
+
+Pushes an update notification to a pass already in a user's wallet.
+
+| Setting | Value |
+|---------|-------|
+| Method | `POST` |
+| URL | `https://api.passform.io/v1/pass/{{ $json.templateId }}/{{ $json.passId }}/notify` |
+| Body Content Type | JSON |
+
+**Example body:**
+```json
+{
+  "notification": {
+    "title": "Your reward is ready",
+    "message": "You have 150 points — redeem in store today."
+  }
+}
+```
+
+---
+
+### List passes for a template
+
+| Setting | Value |
+|---------|-------|
+| Method | `GET` |
+| URL | `https://api.passform.io/v1/pass/{{ $json.templateId }}/passes` |
+
+Supports `limit`, `pageToken`, `sortBy`, and `sortOrder` query parameters.
+
+## Example workflows
+
+<AccordionGroup>
+  <Accordion title="Issue a pass from a webhook">
+    1. **Webhook** node — receives customer data (name, email, ID)
+    2. **HTTP Request** node — `POST /v1/pass/{templateId}/{customerId}` to upsert the pass
+    3. **Send Email** / **Slack** node — deliver the `appleUrl` or `googleUrl` from the response
+  </Accordion>
+  <Accordion title="Sync a CRM contact to a loyalty pass">
+    1. **CRM trigger** (HubSpot, Salesforce, etc.) — contact updated
+    2. **HTTP Request** node — upsert pass with updated points/fields
+    3. **HTTP Request** node — `POST /notify` to alert the user their pass has changed
+  </Accordion>
+  <Accordion title="Void passes on a schedule">
+    1. **Schedule** trigger — runs daily
+    2. **HTTP Request** node — `GET /v1/pass/{templateId}/passes` to fetch active passes
+    3. **IF** node — filter passes past their expiry date
+    4. **HTTP Request** node — upsert with `"voided": true`
+  </Accordion>
+</AccordionGroup>
+
+<Tip>
+  Use n8n's **Split In Batches** node when processing large numbers of passes to avoid rate limits.
+</Tip>

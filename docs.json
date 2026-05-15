@@ -20,6 +20,10 @@
           {
             "group": "Guides",
             "pages": ["guides/image-dimensions"]
+          },
+          {
+            "group": "Integrations",
+            "pages": ["guides/zapier", "guides/n8n"]
           }
         ]
       },

@@ -1,0 +1,64 @@
+---
+title: "Zapier"
+description: "Automate pass creation and updates using the Passform Zapier integration"
+icon: "bolt"
+---
+
+The Passform Zapier integration lets you create and upsert passes from any app in the Zapier ecosystem — no code required.
+
+## Connect Passform to Zapier
+
+<Steps>
+  <Step title="Accept the Zapier invite">
+    Open the [Passform Zapier integration](https://zapier.com/developer/public-invite/219050/7c84c1f7234ce23d2c311bb7af01f306/) and click **Accept Invite & Build a Zap**.
+  </Step>
+  <Step title="Add your API key">
+    When prompted to connect your Passform account, enter your API key from the [dashboard](https://app.passform.io). Zapier stores it securely and uses it for all Passform actions in your Zaps.
+  </Step>
+</Steps>
+
+## Actions
+
+### Upsert Pass
+
+Creates a new pass or updates an existing one for a given template and pass ID.
+
+| Field | Description |
+|-------|-------------|
+| **Template ID** | The ID of the template the pass belongs to |
+| **Pass ID** | A unique identifier for this pass instance (e.g. a customer ID or order number) |
+| **Expiry** | Optional ISO 8601 date after which the pass expires |
+| **Valid From** | Optional ISO 8601 date from which the pass becomes valid |
+| **Voided** | Set to `true` to mark the pass as used |
+| **Fields** | Up to 4 key/label/value fields shown on the front of the pass |
+| **Back Fields** | Key/label/value fields shown on the back of the pass |
+
+## Example Zaps
+
+<AccordionGroup>
+  <Accordion title="Issue a pass when a row is added to Google Sheets">
+    **Trigger:** Google Sheets — New Spreadsheet Row
+
+    **Action:** Passform — Upsert Pass
+
+    Map the sheet columns to the pass fields. Use a unique row ID or customer ID as the Pass ID so the same pass is updated if the Zap runs again for the same row.
+  </Accordion>
+  <Accordion title="Void a pass when an order is refunded">
+    **Trigger:** Your ecommerce platform (Shopify, WooCommerce, etc.) — Order Refunded
+
+    **Action:** Passform — Upsert Pass
+
+    Set **Pass ID** to the order ID and set **Voided** to `true`. The pass updates instantly in the customer's wallet.
+  </Accordion>
+  <Accordion title="Update a loyalty pass when points change">
+    **Trigger:** Your CRM or loyalty platform — Contact Updated
+
+    **Action:** Passform — Upsert Pass
+
+    Map the points field to a pass field value. Passform pushes the update to the customer's wallet automatically.
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  The Passform Zapier integration is currently in invite-only access. Use the link above to connect.
+</Note>
