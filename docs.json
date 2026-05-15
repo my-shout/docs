@@ -16,6 +16,10 @@
           {
             "group": "Getting started",
             "pages": ["index", "quickstart"]
+          },
+          {
+            "group": "Guides",
+            "pages": ["guides/image-dimensions"]
           }
         ]
       },
