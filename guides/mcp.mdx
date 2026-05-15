@@ -1,0 +1,85 @@
+---
+title: "MCP server"
+description: "Connect AI tools to Passform using the Model Context Protocol"
+icon: "robot"
+---
+
+Passform exposes an [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server, letting AI tools like Claude, Cursor, and Windsurf interact directly with your passes and templates.
+
+**MCP server URL:** `https://api.passform.io/mcp`
+
+## Authentication
+
+The MCP server supports two authentication methods.
+
+<Tabs>
+  <Tab title="OAuth 2.0 (recommended)">
+    MCP clients that support OAuth 2.0 discovery can authenticate automatically. The server publishes standard discovery documents:
+
+    | Endpoint | URL |
+    |----------|-----|
+    | Authorization server metadata | `https://api.passform.io/.well-known/oauth-authorization-server` |
+    | Protected resource metadata | `https://api.passform.io/.well-known/oauth-protected-resource` |
+
+    Compatible clients will detect these and prompt you to log in via the Passform dashboard — no manual config required.
+
+    **Supported OAuth features:**
+    - Authorization code grant
+    - PKCE (S256)
+  </Tab>
+  <Tab title="API key">
+    Pass your API key as a Bearer token in the `Authorization` header. Get your key from [app.passform.io](https://app.passform.io).
+
+    ```
+    Authorization: Bearer YOUR_API_KEY
+    ```
+  </Tab>
+</Tabs>
+
+## Connect to Claude Desktop
+
+Add Passform to `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "passform": {
+      "type": "http",
+      "url": "https://api.passform.io/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_API_KEY"
+      }
+    }
+  }
+}
+```
+
+On macOS the config file is at `~/Library/Application Support/Claude/claude_desktop_config.json`.
+
+## Connect to Claude Code
+
+```bash
+claude mcp add --transport http passform https://api.passform.io/mcp
+```
+
+Claude Code will prompt for authentication on first use if your client supports OAuth discovery.
+
+## Connect to Cursor or Windsurf
+
+Add the MCP server in your editor's MCP settings:
+
+| Field | Value |
+|-------|-------|
+| Transport | HTTP / Streamable HTTP |
+| URL | `https://api.passform.io/mcp` |
+| Auth header | `Authorization: Bearer YOUR_API_KEY` |
+
+## Available tools
+
+| Tool | Description |
+|------|-------------|
+| `GET_v1_templates` | List all template IDs for your account |
+
+<Note>
+  More tools are being added. Routes are promoted to MCP tools progressively — check back as the integration expands.
+</Note>

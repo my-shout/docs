@@ -23,7 +23,7 @@
           },
           {
             "group": "Integrations",
-            "pages": ["guides/zapier", "guides/n8n"]
+            "pages": ["guides/zapier", "guides/n8n", "guides/mcp"]
           }
         ]
       },
