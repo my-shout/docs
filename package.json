@@ -1,0 +1,9 @@
+{
+  "name": "docs",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "sync-openapi": "curl -sf http://localhost:5101/my-shout-platform/australia-southeast1/api/openapi.json -o ./api-reference/openapi.json && echo 'openapi.json synced'",
+    "sync-openapi:prod": "curl -sf https://api.passform.io/openapi.json -o ./api-reference/openapi.json && echo 'openapi.json synced'"
+  }
+}
