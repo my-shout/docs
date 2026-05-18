@@ -38,31 +38,61 @@ The MCP server supports two authentication methods.
 
 ## Connect to Claude Desktop
 
-Add Passform to `claude_desktop_config.json`:
+<Tabs>
+  <Tab title="OAuth 2.0 (recommended)">
+    Add Passform to `claude_desktop_config.json` without any credentials — Claude Desktop handles OAuth automatically on first use:
 
-```json
-{
-  "mcpServers": {
-    "passform": {
-      "type": "http",
-      "url": "https://api.passform.io/mcp",
-      "headers": {
-        "Authorization": "Bearer YOUR_API_KEY"
+    ```json
+    {
+      "mcpServers": {
+        "passform": {
+          "type": "http",
+          "url": "https://api.passform.io/mcp"
+        }
       }
     }
-  }
-}
-```
+    ```
+  </Tab>
+  <Tab title="API key">
+    Add Passform to `claude_desktop_config.json` with your API key:
+
+    ```json
+    {
+      "mcpServers": {
+        "passform": {
+          "type": "http",
+          "url": "https://api.passform.io/mcp",
+          "headers": {
+            "Authorization": "Bearer YOUR_API_KEY"
+          }
+        }
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
 
 On macOS the config file is at `~/Library/Application Support/Claude/claude_desktop_config.json`.
 
 ## Connect to Claude Code
 
-```bash
-claude mcp add --transport http passform https://api.passform.io/mcp
-```
+<Tabs>
+  <Tab title="OAuth 2.0 (recommended)">
+    Run once — Claude Code detects OAuth automatically and opens a browser login:
 
-Claude Code will prompt for authentication on first use if your client supports OAuth discovery.
+    ```bash
+    claude mcp add --transport http passform https://api.passform.io/mcp
+    ```
+  </Tab>
+  <Tab title="API key">
+    Pass your key inline with `--header`:
+
+    ```bash
+    claude mcp add --transport http passform https://api.passform.io/mcp \
+      --header "Authorization: Bearer YOUR_API_KEY"
+    ```
+  </Tab>
+</Tabs>
 
 ## Connect to Cursor or Windsurf
 
