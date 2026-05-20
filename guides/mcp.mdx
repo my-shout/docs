@@ -14,18 +14,7 @@ The MCP server supports two authentication methods.
 
 <Tabs>
   <Tab title="OAuth 2.0 (recommended)">
-    MCP clients that support OAuth 2.0 discovery can authenticate automatically. The server publishes standard discovery documents:
-
-    | Endpoint | URL |
-    |----------|-----|
-    | Authorization server metadata | `https://api.passform.io/.well-known/oauth-authorization-server` |
-    | Protected resource metadata | `https://api.passform.io/.well-known/oauth-protected-resource` |
-
-    Compatible clients will detect these and prompt you to log in via the Passform dashboard — no manual config required.
-
-    **Supported OAuth features:**
-    - Authorization code grant
-    - PKCE (S256)
+    When you add the server, your MCP client will open a browser window. Sign in with your Passform account and you're done — no keys or config required.
   </Tab>
   <Tab title="API key">
     Pass your API key as a Bearer token in the `Authorization` header. Get your key from [app.passform.io](https://app.passform.io).
@@ -106,10 +95,27 @@ Add the MCP server in your editor's MCP settings:
 
 ## Available tools
 
+### Accounts
+
 | Tool | Description |
 |------|-------------|
-| `GET_v1_templates` | List all template IDs for your account |
+| `listAccounts` | List all accounts you have access to, with full details |
 
-<Note>
-  More tools are being added. Routes are promoted to MCP tools progressively — check back as the integration expands.
-</Note>
+### Templates
+
+| Tool | Description |
+|------|-------------|
+| `listTemplates` | List all templates for an account, with full details |
+| `getTemplate` | Get a single template by ID |
+| `upsertTemplate` | Create or update a template |
+
+### Passes
+
+| Tool | Description |
+|------|-------------|
+| `createPass` | Create a pass with a random ID |
+| `listPasses` | List passes for a template, with pagination and sorting |
+| `getPass` | Get a specific pass |
+| `upsertPass` | Create or update a pass with a specific ID |
+| `notifyPass` | Send a push notification to a pass |
+| `updatePassMetadata` | Update pass metadata without triggering a wallet notification |
