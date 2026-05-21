@@ -19,7 +19,7 @@
           },
           {
             "group": "Guides",
-            "pages": ["guides/image-dimensions"]
+            "pages": ["guides/image-dimensions", "guides/dynamic-pass-modules"]
           },
           {
             "group": "Integrations",

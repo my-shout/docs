@@ -1,0 +1,216 @@
+---
+title: "Dynamic Pass Modules"
+description: "Surface time-gated promotions, deliver linked passes, and drive engagement with Value Added Opportunities in Google Wallet and Apple Wallet"
+icon: "wallet"
+---
+
+Both Google Wallet and Apple Wallet support mechanisms to make passes richer and more interactive after they have been issued. Passes can carry dynamic links to external content, surface time-gated promotional modules, automatically deliver additional passes to a user's wallet, and trigger loyalty enrolment at the point of payment.
+
+---
+
+## Google Wallet
+
+### Value Added Opportunities (VAO)
+
+VAO lets you attach one or more clickable content modules to the details page of a Google Wallet pass. These modules appear below the pass when a user taps through to see the full details view. Each module is a visual tile with an image, headline, short description, and destination URL.
+
+Common uses include time-gated promotions, seasonal campaigns, cross-sell content, post-event materials, or any contextually relevant content you want to surface in the wallet.
+
+**Supported pass types:** Loyalty Cards, Gift Cards, and Offers.
+
+#### Module fields
+
+Modules are configured using the `ValueAddedModuleData` field on either the pass **class** (applies to all users) or the pass **object** (an individual user's pass). Object-level modules take priority over class-level modules when the display limit is reached.
+
+| Field | Required | Notes |
+|---|---|---|
+| `header` | Yes | Localised string. Max 60 characters. Truncated if longer. |
+| `body` | No | Localised string. Max 50 characters. |
+| `image` | No | 1:1 aspect ratio recommended. Will be resized to fit. |
+| `uri` | Yes | Web URL or Android deep link. |
+| `viewConstraints.displayInterval` | No | `startTime` and/or `endTime` in ISO 8601. Shows indefinitely if `endTime` is not set. Shows immediately if `startTime` is not set. |
+| `sortIndex` | No | Integer. Lower index = displayed first. Defaults to INT_MAX if unset. |
+
+**Module limits:**
+- Up to 15 modules per pass object
+- Up to 15 modules per pass class
+- Maximum 15 modules displayed in total on any single pass
+- Object modules are prioritised; class modules fill remaining slots
+
+#### Example payload
+
+```json
+{
+  "valueAddedModuleData": [
+    {
+      "header": {
+        "defaultValue": {
+          "language": "en-AU",
+          "value": "20% off this weekend"
+        }
+      },
+      "body": {
+        "defaultValue": {
+          "language": "en-AU",
+          "value": "In-store and online. Ends Sunday."
+        }
+      },
+      "image": {
+        "sourceUri": {
+          "uri": "https://cdn.yourbrand.com/wallet/promo-tile.png"
+        }
+      },
+      "uri": "https://yourbrand.com/weekend-sale?utm_source=wallet",
+      "viewConstraints": {
+        "displayInterval": {
+          "start": { "date": "2026-06-06T00:00:00" },
+          "end": { "date": "2026-06-08T23:59:59" }
+        }
+      },
+      "sortIndex": 0
+    }
+  ]
+}
+```
+
+Add or update modules via a PATCH or PUT call to the Google Wallet REST API on the relevant class or object. No user action required — the module appears next time the user views their pass. To remove a module, update the object or class to remove it from the array.
+
+#### Error states
+
+| Error message | Cause |
+|---|---|
+| `ValueAddedModuleData must contain a header.` | Header field is missing. |
+| `ValueAddedModuleData must contain a non-empty URI.` | URI field is missing or empty. |
+| `A maximum of 15 value added modules are allowed per class.` | Class module limit reached. |
+| `A maximum of 15 value added modules are allowed per object.` | Object module limit reached. |
+
+---
+
+### Auto Linked Passes
+
+Auto Linked Passes lets you push additional passes to a user who already holds an existing pass in their Google Wallet. The new pass is automatically grouped with the primary pass and a callout appears above it. Users swipe right to see the linked pass.
+
+This is distinct from VAO — VAO adds a clickable module to the existing pass, while Auto Linked Passes delivers an entirely separate pass into the wallet.
+
+**Supported pass types** (primary or linked): Event Ticket, Boarding Pass, Transit Pass, Offer, Gift Card, Loyalty Pass, Generic Pass.
+
+**Example use cases:**
+- Link a discount offer to a loyalty card after a purchase milestone
+- Attach a meal voucher or drink token to an event ticket
+- Append a parking pass to a festival wristband
+- Deliver a stamp-card pass to someone who already holds a membership pass
+
+#### Requirements
+
+- Primary and linked objects must share the same `issuerId`. Cross-issuer linking is not supported.
+- The linked object must be inserted into the Wallet API before it can be linked.
+- Linked objects cannot themselves have linked objects (no nesting).
+- An object cannot be both a primary and a linked object simultaneously.
+- Limit of 50 linked objects per primary pass.
+
+#### Integration steps
+
+<Steps>
+  <Step title="Create the primary object">
+    Create the primary pass object (or use an existing one).
+  </Step>
+  <Step title="Create the linked object">
+    Create the linked pass object (any supported pass type) and insert it via the API.
+  </Step>
+  <Step title="Update the primary with the linked ID">
+    PATCH the primary object to add the linked object's ID to the `linkedObjectIds` array.
+
+    ```json
+    {
+      "id": "ISSUERID.PRIMARY_OBJECT_ID",
+      "classId": "ISSUERID.PRIMARY_CLASS_ID",
+      "linkedObjectIds": ["ISSUERID.LINKED_PASS_OBJECT_ID"]
+    }
+    ```
+  </Step>
+</Steps>
+
+<Warning>
+  Delivery is asynchronous and best-effort — users can opt out of receiving Auto Linked Passes. If your use case requires the user to definitely have the linked pass (for example, a venue check-in requiring a separate access credential), a fallback distribution method should also be in place.
+</Warning>
+
+#### Error states
+
+| Error message | Cause |
+|---|---|
+| `Primary object and linked object don't share the same issuer ID.` | Cross-issuer link attempted. |
+| `Linked object does not exist.` | Object must be inserted via the API before linking. |
+| `Linked object already has another linked object.` | Nesting is not permitted. |
+| `Cannot add any more linked objects, limit exceeded.` | 50-pass limit reached. |
+
+---
+
+### Post-Purchase Loyalty Enrolment
+
+Google Wallet supports a loyalty enrolment trigger that fires immediately following a completed purchase, surfacing a wallet pass offer to the customer at their most engaged moment. This feature is currently in private pilot via the Google Wallet support console.
+
+---
+
+## Apple Wallet
+
+Apple Wallet does not have a direct equivalent to Google's VAO modules. There is no structured image + header + body + clickable CTA on the pass details view. What Apple provides instead:
+
+**Back fields with inline URLs.**
+The back of an Apple Wallet pass can contain formatted text fields. From iOS 15.2, URLs in back field text are rendered as tappable hyperlinks. Functional but less prominent than a VAO tile — it requires the user to flip the pass over and tap a URL in plain text.
+
+**App links.**
+A pass can include a link to the issuer's app or App Store listing via `associatedStoreIdentifiers` (App Store) or `appLaunchURL` (deep links). This is a single link, not a configurable sequence of modules.
+
+**Dynamic pass updates.**
+Apple passes support remote updates via a push notification that triggers the device to fetch a new version of the pass. Pass content — fields, images, colours, barcodes — can be updated server-side. Combined with back field links, this approximates some VAO behaviour, but requires a full pass update rather than a lightweight module API call.
+
+**Push notifications.**
+Apple passes can send lock screen push notifications carrying a URL that opens in a browser or deep-links into an app. This is the most effective way to drive a user from their pass to external content on iOS.
+
+**Location and time triggers.**
+Apple passes support geofence and time-based triggers configured inside the pass JSON. These surface the pass on the lock screen or send a notification when conditions are met, without requiring a server push.
+
+### NFC and contactless loyalty (VAS)
+
+Apple's Value Added Services (VAS) protocol enables contactless NFC-based loyalty check-in and redemption at certified terminals.
+
+| Mode | How it works |
+|---|---|
+| One-tap | Customer pays with Apple Pay. Loyalty pass is automatically appended to the transaction. Points accrue in a single tap. |
+| Two-tap | Customer taps with loyalty pass to check in and see updated balance, then taps again with Apple Pay to pay the adjusted amount. |
+| Rewards-only | Customer taps to check in separately from payment. Staff can view account history and available offers. |
+
+This requires NFC-certified terminals and a certified pass provider relationship with Apple.
+
+### Post-purchase loyalty enrolment
+
+After a successful Apple Pay contactless payment, customers can be automatically invited to join the issuer's loyalty programme. Contact details are prefilled from the user's Contacts card. After accepting terms, the pass is automatically added to their wallet. Available via Apple's existing VAS infrastructure.
+
+---
+
+## Platform comparison
+
+| Capability | Google Wallet | Apple Wallet |
+|---|---|---|
+| Clickable modules on pass details | Yes — VAO, up to 15 per pass | No direct equivalent |
+| Scheduled module display windows | Yes — per-module start/end times | No |
+| Module image + header + body | Yes | No |
+| Links from pass to external URL | Via VAO modules | Via back field text links (iOS 15.2+) |
+| App deep link from pass | Yes | Yes — `appLaunchURL` |
+| Auto-deliver additional passes | Yes — Auto Linked Passes | No equivalent |
+| Dynamic pass content updates | Yes | Yes |
+| Lock screen push notifications | Yes | Yes |
+| Geo and time triggers | Yes | Yes |
+| Contactless NFC loyalty (hardware) | Limited | Yes — VAS protocol |
+| Post-purchase loyalty enrolment | Pilot only | Yes — via VAS terminals |
+| Merchant Centre integration | Yes (loyalty, gift card, offers) | No |
+
+---
+
+## References
+
+- [Google Wallet: Value Added Opportunities](https://developers.google.com/wallet/retail/loyalty-cards/use-cases/value-added-opportunities)
+- [Google Wallet: Auto Linked Passes](https://developers.google.com/wallet/retail/loyalty-cards/use-cases/auto-linked-passes)
+- [Google Wallet: Post-Purchase Loyalty Enrolment](https://developers.google.com/wallet/retail/loyalty-cards/use-cases/bounceback)
+- [Apple Wallet: Loyalty and Membership Passes](https://developer.apple.com/wallet/loyalty-passes/)
+- [Apple Wallet: Pass Developer Documentation](https://developer.apple.com/documentation/walletpasses)
