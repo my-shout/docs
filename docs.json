@@ -19,7 +19,7 @@
           },
           {
             "group": "Guides",
-            "pages": ["guides/pass-types", "guides/image-dimensions", "guides/dynamic-pass-modules"]
+            "pages": ["guides/pass-types", "guides/notifications", "guides/image-dimensions"]
           },
           {
             "group": "Integrations",
