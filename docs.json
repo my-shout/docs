@@ -3,9 +3,9 @@
   "theme": "mint",
   "name": "Passform Docs",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#009485",
+    "light": "#19bea2",
+    "dark": "#00665c"
   },
   "favicon": "/favicon.svg",
   "navigation": {
