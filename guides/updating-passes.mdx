@@ -1,0 +1,136 @@
+---
+title: "Updating passes"
+description: "Update individual passes and push template changes to all holders"
+icon: "arrows-rotate"
+---
+
+Passform supports two levels of update: **pass-level** changes that affect a single issued pass, and **template-level** changes that propagate to every pass issued from that template.
+
+---
+
+## Updating a pass
+
+Use the same endpoint to create and update a pass — it behaves as an upsert. Calling it with an existing pass ID updates that pass in place.
+
+```bash
+POST /v1/pass/{templateId}/{passId}
+```
+
+Any field you include replaces the current value. Fields you omit are left unchanged.
+
+**Updatable fields:**
+
+| Field | Description |
+|---|---|
+| `fields` | The fields displayed on the front of the pass |
+| `backFields` | Fields shown on the back of the pass |
+| `primaryValue` | The primary value displayed on membership and generic passes |
+| `expiry` | Pass expiry date — set to `null` to remove |
+| `validFrom` | Date from which the pass becomes valid |
+| `voided` | Set to `true` to void the pass |
+| `code` | The barcode/QR code value |
+
+**Example — update a membership points balance:**
+
+```bash
+curl -X POST https://api.passform.io/v1/pass/my-membership-template/member-123 \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "primaryValue": "1,850",
+    "fields": [
+      { "key": "tier", "label": "Tier", "value": "Gold" }
+    ]
+  }'
+```
+
+**Example — void a pass:**
+
+```bash
+curl -X POST https://api.passform.io/v1/pass/my-offer-template/pass-456 \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "voided": true
+  }'
+```
+
+### How updates reach the wallet
+
+After a pass is updated, Passform automatically notifies both wallets:
+
+- **Apple Wallet** — a silent push notification is sent to each device that has the pass installed. Apple Wallet then fetches the latest version of the pass in the background. The user sees the updated pass the next time they open it.
+- **Google Wallet** — the pass object is updated directly via the Google Wallet API. Changes are reflected immediately.
+
+No additional API calls are needed to trigger this — it happens automatically on every upsert.
+
+---
+
+## Updating a template
+
+Updating a template changes the **appearance and shared content** of every pass issued from it — colors, images, logo, title, and default field values.
+
+```bash
+POST /v1/templates/{templateId}
+```
+
+**Example — update a template's banner image:**
+
+```bash
+curl -X POST https://api.passform.io/v1/templates/my-offer-template \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "offer",
+    "title": "Summer Sale",
+    "issuerName": "Acme Co",
+    "foregroundColor": "#FFFFFF",
+    "backgroundColor": "#1a1a2e",
+    "icon": "https://cdn.example.com/icon.png",
+    "logo": "https://cdn.example.com/logo.png",
+    "banner": "https://cdn.example.com/new-banner.png"
+  }'
+```
+
+### How template updates propagate
+
+When a template is updated, Passform:
+
+1. Updates the **Google Wallet class** — all Google Wallet passes reflect the new design immediately
+2. Rebuilds the **Apple Wallet pass template** with the new values
+3. Sends a push notification to every device that has a pass from this template, prompting Apple Wallet to fetch the updated version
+
+This means a single template update can refresh the look and feel of thousands of passes at once — useful for seasonal rebrands, updated artwork, or correcting a typo in shared content.
+
+### Pass data vs template data
+
+Template updates affect shared design and default content only. Per-pass data — `fields`, `primaryValue`, `expiry`, `voided` — is stored on the individual pass and is not affected by template updates.
+
+| Changed on | Affects |
+|---|---|
+| Template | Colors, images, logo, title, issuer name, default fields |
+| Pass | `fields`, `backFields`, `primaryValue`, `expiry`, `validFrom`, `voided`, `code` |
+
+---
+
+## Metadata
+
+Metadata is a free-form object you can attach to a pass for your own tracking purposes. It is not displayed in the wallet.
+
+```bash
+PATCH /v1/pass/{templateId}/{passId}/metadata
+```
+
+Updating metadata does **not** trigger a wallet push — it is a silent server-side change only.
+
+```bash
+curl -X PATCH https://api.passform.io/v1/pass/my-template/pass-123/metadata \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "metadata": {
+      "customerId": "cust_abc123",
+      "source": "pos"
+    }
+  }'
+```

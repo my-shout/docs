@@ -7,7 +7,10 @@
     "light": "#19bea2",
     "dark": "#00665c"
   },
-  "favicon": "/favicon.ico",
+  "favicon": {
+    "light": "/logo/logo-black.png",
+    "dark": "/logo/logo-white.png"
+  },
   "navigation": {
     "tabs": [
       {
@@ -19,7 +22,7 @@
           },
           {
             "group": "Guides",
-            "pages": ["guides/pass-types", "guides/notifications", "guides/image-dimensions"]
+            "pages": ["guides/pass-types", "guides/notifications", "guides/updating-passes", "guides/image-dimensions"]
           },
           {
             "group": "Integrations",
