@@ -1,0 +1,23 @@
+# Passform Docs
+
+Developer documentation for Passform, a platform for creating, distributing, and updating Apple Wallet and Google Wallet passes, with a browser-based web viewer for users on desktop or devices without a wallet app.
+
+Support: mailto:support@passform.io
+LinkedIn: https://linkedin.com/company/passform-io
+Docs home: https://docs.passform.io/
+API reference: https://docs.passform.io/api-reference/introduction
+
+## Getting started
+- Introduction: https://docs.passform.io/ - Overview of Passform, supported pass types, and the basic flow for creating templates, issuing passes, and updating them in real time.
+- Quickstart: https://docs.passform.io/quickstart - Create your first template, issue a pass, and use the Apple Wallet, Google Wallet, and web viewer distribution URLs.
+
+## Guides
+- Pass types: https://docs.passform.io/guides/pass-types - Compare offer, event, membership, and generic passes, including layouts, use cases, shared fields, and wallet-specific behavior.
+- Notifications: https://docs.passform.io/guides/notifications - Configure expiry, event timing, and location-based relevance so passes appear at the right time or place.
+- Updating passes: https://docs.passform.io/guides/updating-passes - Upsert passes, update templates, void passes, and understand how changes propagate to installed wallet passes.
+- Image dimensions: https://docs.passform.io/guides/image-dimensions - Recommended image sizes and formats for icons, logos, banners, thumbnails, and web viewer backgrounds.
+
+## Integrations
+- Zapier: https://docs.passform.io/guides/zapier - Use Passform with Zapier to issue and update passes without writing code.
+- n8n: https://docs.passform.io/guides/n8n - Use n8n HTTP Request nodes with the Passform API to upsert passes and send notifications.
+- MCP: https://docs.passform.io/guides/mcp - Connect Passform to MCP-compatible AI tools with OAuth for agent-driven workflows.

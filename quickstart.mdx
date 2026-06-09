@@ -6,7 +6,7 @@ icon: 'rocket'
 
 ## Prerequisites
 
-- A Passform account — [sign up at app.passform.io](https://app.passform.io)
+- A Passform account - [sign up at app.passform.io](https://app.passform.io)
 - An API key from your account dashboard
 
 ## Step 1: Get your API key
@@ -19,7 +19,7 @@ A template defines the appearance of your pass. Create one by uploading images a
 
 ```bash
 curl -X POST https://api.passform.io/v1/templates/my-first-template \
-  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Authorization: Bearer ***\" \\
   -H "Content-Type: application/json" \
   -d '{
     "title": "My First Pass",
@@ -42,7 +42,7 @@ With a template in place, create a pass instance:
 
 ```bash
 curl -X POST https://api.passform.io/v1/pass/my-first-template \
-  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Authorization: Bearer ***\" \\
   -H "Content-Type: application/json" \
   -d '{
     "expiry": "2026-12-31T23:59:59Z",
@@ -51,7 +51,13 @@ curl -X POST https://api.passform.io/v1/pass/my-first-template \
   }'
 ```
 
-The response includes `appleUrl` and `googleUrl` — send these to your users to add the pass to their wallet.
+The response includes distribution URLs for each delivery format:
+
+- `appleUrl` - direct Apple Wallet download for iPhone users
+- `googleUrl` - Google Wallet save URL for Android users
+- `webUrl` - a browser-friendly pass viewer for users on desktop or devices without a wallet app installed
+
+Use the right URL for the user's device, or present all three options in your own UI.
 
 ## Step 4: Update or notify a pass
 
@@ -59,7 +65,7 @@ Push an update to a pass already in a user's wallet:
 
 ```bash
 curl -X POST https://api.passform.io/v1/pass/my-first-template/PASS_ID/notify \
-  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Authorization: Bearer ***\" \\
   -H "Content-Type: application/json" \
   -d '{
     "notification": {
