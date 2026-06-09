@@ -1,0 +1,94 @@
+---
+title: "Notifications"
+description: "How Apple Wallet and Google Wallet automatically surface passes at the right moment"
+icon: "bell"
+---
+
+Wallet passes can surface automatically on a user's lock screen without any action from you. Both Apple Wallet and Google Wallet use pass data to determine when a pass is relevant — prompting the user at the right time or place.
+
+These notifications are triggered by the wallet app itself based on data embedded in the pass. No server-side action is required once the pass is issued.
+
+---
+
+## Expiry
+
+When a pass has an `expiry` date set, both Apple Wallet and Google Wallet will alert the user as the pass approaches its expiry.
+
+- **Apple Wallet** — surfaces the pass on the lock screen in the days leading up to expiry and displays a visible countdown on the pass face
+- **Google Wallet** — highlights the expiry date prominently on the pass
+
+**Supported pass types:** Offer
+
+Set `expiry` when issuing a pass:
+
+```json
+{
+  "expiry": "2026-09-30T23:59:59Z"
+}
+```
+
+<Note>
+  Expiry is set per-pass, not per-template — different passes from the same template can have different expiry dates.
+</Note>
+
+---
+
+## Event time
+
+Event passes are automatically surfaced on the user's lock screen as the event start time approaches.
+
+- **Apple Wallet** — shows the pass on the lock screen before and during the event window based on the `startDate`
+
+**Supported pass types:** Event
+
+The `startDate` is set on the template and applies to all passes issued from it:
+
+```json
+{
+  "type": "event",
+  "startDate": "2026-08-15T19:30:00Z"
+}
+```
+
+No additional configuration is needed — Apple Wallet handles the timing automatically.
+
+---
+
+## Location
+
+When a pass has a `location` set, Apple Wallet will surface the pass on the lock screen when the user's device is near that location.
+
+- **Apple Wallet** — shows a lock screen notification with the venue name when the user arrives in the vicinity
+
+**Supported pass types:** Event
+
+Add a `location` to the event template:
+
+```json
+{
+  "type": "event",
+  "startDate": "2026-08-15T19:30:00Z",
+  "location": {
+    "name": "City Theatre",
+    "address": "12 Queen St, Auckland",
+    "latitude": -36.848461,
+    "longitude": 174.763336
+  }
+}
+```
+
+The `name` is shown in the lock screen prompt. `address` appears on the back of the pass. Both `latitude` and `longitude` are required for location-based triggering.
+
+<Note>
+  Location notifications are an Apple Wallet feature only. Google Wallet does not support geofence-based pass surfacing.
+</Note>
+
+---
+
+## Summary
+
+| Trigger | Apple Wallet | Google Wallet | Pass types |
+|---|---|---|---|
+| Expiry approaching | Lock screen + countdown | Expiry highlighted | Offer |
+| Event time | Lock screen before event | — | Event |
+| Near venue | Lock screen on arrival | — | Event |
