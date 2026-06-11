@@ -4,70 +4,21 @@ description: "Required sizes for icons, logos, banners, and other pass images"
 icon: "image"
 ---
 
-Passform automatically generates standard (@1x) and high-resolution (@2x) variants from a single upload. All images are converted to PNG during processing.
+Passform automatically generates the required image variants from a single upload. All images are converted to PNG during processing.
 
 **Max file size:** 10 MB per image.
 
 ## Image types
 
-<AccordionGroup>
-  <Accordion title="Icon" icon="circle">
-    Displayed in Apple Wallet as the small app-like icon on the pass.
+The dimensions below are the **minimum recommended sizes** to upload.
 
-    | Variant | Dimensions |
-    |---------|-----------|
-    | @1x | 29 × 29 px |
-    | @2x (auto-generated) | 58 × 58 px |
-
-    - **Shape:** Square
-    - **Platforms:** Apple Wallet, Web
-  </Accordion>
-
-  <Accordion title="Logo" icon="image">
-    Displayed at the top of a pass alongside the issuer name.
-
-    | Variant | Dimensions |
-    |---------|-----------|
-    | @1x | 160 × 50 px |
-    | @2x (auto-generated) | 320 × 100 px |
-
-    - **Platforms:** Apple Wallet, Google Wallet
-  </Accordion>
-
-  <Accordion title="Banner" icon="panorama">
-    The main hero image on the front of a pass. Apple Wallet calls this the "strip" image.
-
-    | Variant | Dimensions |
-    |---------|-----------|
-    | @1x | 375 × 123 px |
-    | @2x (auto-generated) | 750 × 246 px |
-
-    - **Platforms:** Apple Wallet, Google Wallet
-    - **Note:** Also used in link previews when sharing a pass URL.
-  </Accordion>
-
-  <Accordion title="Background" icon="desktop">
-    Full-bleed background image shown on the web pass viewer. If not provided, `backgroundColor` is used instead.
-
-    | Variant | Dimensions |
-    |---------|-----------|
-    | Standard | 1920 × 1080 px |
-
-    - **Platform:** Web only
-  </Accordion>
-
-  <Accordion title="Thumbnail" icon="square-dashed">
-    A square image displayed alongside the primary field on generic pass types. Replaces the banner in Apple Wallet when set.
-
-    | Variant | Dimensions |
-    |---------|-----------|
-    | @1x | 90 × 90 px |
-    | @2x (auto-generated) | 180 × 180 px |
-
-    - **Platform:** Apple Wallet only
-    - **Pass types:** `generic` only
-  </Accordion>
-</AccordionGroup>
+| Image | Minimum dimensions | Notes | Platforms |
+|-------|--------------------|-------|-----------|
+| Icon | 58 × 58 px | Square icon shown in Apple Wallet and the web pass viewer. | Apple Wallet, Web |
+| Logo | 320 × 100 px | Displayed at the top of a pass alongside the issuer name. | Apple Wallet, Google Wallet |
+| Banner | 750 × 246 px | Main hero image on the front of a pass. Apple Wallet calls this the strip image. Also used in link previews when sharing a pass URL. | Apple Wallet, Google Wallet |
+| Background | 1920 × 1080 px | Full-bleed background image for the web pass viewer. If omitted, `backgroundColor` is used instead. | Web |
+| Thumbnail | 180 × 180 px | Square image displayed alongside the primary field on generic passes. Replaces the banner in Apple Wallet when set. | Apple Wallet only (`generic` passes) |
 
 ## Platform support
 
@@ -81,7 +32,9 @@ Passform automatically generates standard (@1x) and high-resolution (@2x) varian
 
 ## Uploading images
 
-Upload images via the dashboard or the API. You only need to provide one file per image type — Passform generates the @2x variant automatically.
+Upload images via the dashboard or the API. You only need to provide one file per image type.
+
+If you upload images via the Passform API, they are automatically resized to the appropriate variants for each wallet.
 
 ```bash
 curl -X POST https://api.passform.io/v1/templates/{templateId}/images \
@@ -103,6 +56,14 @@ The response includes URLs for each uploaded image:
 
 Use these URLs in your template's `icon`, `logo`, and `banner` fields.
 
+## Using external image URLs
+
+You can also provide external image URLs instead of uploading images through Passform, but this is advanced usage and has some caveats:
+
+- The images must be publicly accessible. If Google cannot fetch them, Google Wallet passes will not install.
+- Apple bundles images into the pass file. If you change the image at the same URL later, existing Apple Wallet passes will not update unless the image URL also changes.
+- External image URLs may have other side effects depending on caching and wallet behavior, so use them only if you need that level of control.
+
 <Note>
-  Google Wallet requires images to be publicly accessible. Images uploaded via the Passform API are hosted on public URLs and work automatically.
+  Images uploaded via the Passform API are hosted on public URLs, resized automatically, and are the recommended option for most integrations.
 </Note>

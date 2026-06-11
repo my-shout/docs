@@ -19,7 +19,7 @@ A template defines the appearance of your pass. Create one by uploading images a
 
 ```bash
 curl -X POST https://api.passform.io/v1/templates/my-first-template \
-  -H "Authorization: Bearer ***\" \\
+  -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "My First Pass",
@@ -42,7 +42,7 @@ With a template in place, create a pass instance:
 
 ```bash
 curl -X POST https://api.passform.io/v1/pass/my-first-template \
-  -H "Authorization: Bearer ***\" \\
+  -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "expiry": "2026-12-31T23:59:59Z",
@@ -59,21 +59,11 @@ The response includes distribution URLs for each delivery format:
 
 Use the right URL for the user's device, or present all three options in your own UI.
 
-## Step 4: Update or notify a pass
+## Step 4: Update a pass or template
 
-Push an update to a pass already in a user's wallet:
+Once a pass has been issued, you can either update the individual pass data or update the template to change shared design and content across every pass issued from it.
 
-```bash
-curl -X POST https://api.passform.io/v1/pass/my-first-template/PASS_ID/notify \
-  -H "Authorization: Bearer ***\" \\
-  -H "Content-Type: application/json" \
-  -d '{
-    "notification": {
-      "title": "Your pass has been updated",
-      "message": "New reward unlocked!"
-    }
-  }'
-```
+See the [Updating passes](/guides/updating-passes) guide for pass-level and template-level update examples.
 
 ## Next steps
 
