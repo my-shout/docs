@@ -6,7 +6,7 @@ icon: 'rocket'
 
 ## Prerequisites
 
-- A Passform account — [sign up at app.passform.io](https://app.passform.io)
+- A Passform account - [sign up at app.passform.io](https://app.passform.io)
 - An API key from your account dashboard
 
 ## Step 1: Get your API key
@@ -51,23 +51,19 @@ curl -X POST https://api.passform.io/v1/pass/my-first-template \
   }'
 ```
 
-The response includes `appleUrl` and `googleUrl` — send these to your users to add the pass to their wallet.
+The response includes distribution URLs for each delivery format:
 
-## Step 4: Update or notify a pass
+- `appleUrl` - direct Apple Wallet download for iPhone users
+- `googleUrl` - Google Wallet save URL for Android users
+- `webUrl` - a browser-friendly pass viewer for users on desktop or devices without a wallet app installed
 
-Push an update to a pass already in a user's wallet:
+Use the right URL for the user's device, or present all three options in your own UI.
 
-```bash
-curl -X POST https://api.passform.io/v1/pass/my-first-template/PASS_ID/notify \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "notification": {
-      "title": "Your pass has been updated",
-      "message": "New reward unlocked!"
-    }
-  }'
-```
+## Step 4: Update a pass or template
+
+Once a pass has been issued, you can either update the individual pass data or update the template to change shared design and content across every pass issued from it.
+
+See the [Updating passes](/guides/updating-passes) guide for pass-level and template-level update examples.
 
 ## Next steps
 
