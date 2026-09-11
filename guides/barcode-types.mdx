@@ -1,0 +1,66 @@
+---
+title: "Barcode types"
+description: "Choose a barcode format for your pass and understand each format's code length and character limits"
+icon: "barcode"
+---
+
+Every pass has a scannable code, set via the pass's `code` field and rendered on the front of the pass. By default this is a QR code, but you can choose a different barcode format per template via the `barcodeFormat` field.
+
+Passform supports the four barcode formats that both Apple Wallet and Google Wallet render natively: **QR**, **PDF417**, **Aztec**, and **Code128**. Apple Wallet's barcode support is limited to exactly these four formats, so restricting to this set guarantees every format works on both wallets with no fallback or platform-specific behavior.
+
+`barcodeFormat` is set on the **template**, not the individual pass — every pass issued from a template renders its code in that template's chosen format. The `code` value itself remains a per-pass field; see [Updating passes](/guides/updating-passes) for how to set or change it.
+
+## Choosing a format
+
+| `barcodeFormat` value | Format | Best for |
+|---|---|---|
+| `QR` *(default)* | QR code | General purpose. Highest data capacity, scannable from any angle, and the most widely recognized format. |
+| `PDF417` | PDF417 | Compact 2D stacked barcode. Common on boarding passes and ID cards. |
+| `Aztec` | Aztec code | Compact 2D barcode that doesn't require a quiet zone (blank margin) around it, making it a good fit for smaller pass designs. Widely used for transit and event tickets. |
+| `Code128` | Code128 | Traditional 1D (linear) barcode. Use this if your scanning hardware is linear-barcode-only — 2D formats are unreadable by 1D-only scanners. |
+
+Set it when creating or updating a template:
+
+```json
+{
+  "type": "offer",
+  "title": "Summer Sale Voucher",
+  "barcodeFormat": "PDF417",
+  "issuerName": "Acme Co",
+  "foregroundColor": "#FFFFFF",
+  "backgroundColor": "#1a1a2e",
+  "icon": "https://cdn.example.com/icon.png",
+  "logo": "https://cdn.example.com/logo.png",
+  "banner": "https://cdn.example.com/banner.png"
+}
+```
+
+If omitted, `barcodeFormat` defaults to `QR`.
+
+## Code length and character limits
+
+Each format has a different data capacity, and 1D formats additionally restrict which characters they can encode reliably. Passform validates a pass's `code` against its template's `barcodeFormat` when the pass is created or updated, and rejects a `code` that doesn't fit.
+
+| `barcodeFormat` | Max length | Character set |
+|---|:---:|---|
+| `QR` | 2,000 characters | Any |
+| `PDF417` | 800 characters | Any |
+| `Aztec` | 1,500 characters | Any |
+| `Code128` | 48 characters | Printable ASCII only (no emoji or non-Latin scripts) |
+
+<Note>
+  These limits are set well below each format's theoretical maximum capacity to keep the resulting barcode reliably scannable at typical wallet-pass size. A longer, denser code is technically encodable but becomes harder for a scanner to read reliably at that size.
+</Note>
+
+If a `code` violates the selected format's limit, the API returns a `400` error and the pass is not created or updated:
+
+```json
+{
+  "statusCode": 400,
+  "message": "Pass code is not valid for the template's barcode format (Code128): must be 1-48 characters and match printable ASCII."
+}
+```
+
+<Tip>
+  Switching an existing template's `barcodeFormat` to a stricter format (for example, from `QR` to `Code128`) does not retroactively validate codes already issued on existing passes — only future creates and updates are checked. Confirm your existing `code` values fit the new format's limits before switching.
+</Tip>

@@ -28,7 +28,7 @@ Any field you include replaces the current value. Fields you omit are left uncha
 | `expiry` | Pass expiry date — set to `null` to remove |
 | `validFrom` | Date from which the pass becomes valid |
 | `voided` | Set to `true` to void the pass |
-| `code` | The barcode/QR code value |
+| `code` | The barcode/QR code value. Must fit the length and character limits of the template's `barcodeFormat` - see [barcode types](/guides/barcode-types). |
 
 **Example — update a membership points balance:**
 

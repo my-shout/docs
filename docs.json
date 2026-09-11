@@ -22,7 +22,7 @@
           },
           {
             "group": "Guides",
-            "pages": ["guides/pass-types", "guides/notifications", "guides/updating-passes", "guides/image-dimensions"]
+            "pages": ["guides/pass-types", "guides/barcode-types", "guides/notifications", "guides/updating-passes", "guides/image-dimensions"]
           },
           {
             "group": "Integrations",

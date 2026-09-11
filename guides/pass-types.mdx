@@ -226,7 +226,8 @@ All pass types share the following base fields:
 | `fields` | No | Up to 4 fields shown on the pass face |
 | `backFields` | No | Fields shown on the back of the pass (tap to flip) |
 | `sharingProhibited` | No | Disable sharing from mobile wallet apps |
+| `barcodeFormat` | No | Barcode format for the pass code - `QR` (default), `PDF417`, `Aztec`, or `Code128` |
 
 When you issue a pass, the response includes `appleUrl`, `googleUrl`, and `webUrl` so you can distribute the same pass to Apple Wallet, Google Wallet, or Passform's browser-based web viewer.
 
-See the [image dimensions guide](/guides/image-dimensions) for recommended sizes for `icon`, `logo`, `banner`, and `thumbnail`.
+See the [image dimensions guide](/guides/image-dimensions) for recommended sizes for `icon`, `logo`, `banner`, and `thumbnail`, and the [barcode types guide](/guides/barcode-types) for choosing a `barcodeFormat` and its code length limits.
