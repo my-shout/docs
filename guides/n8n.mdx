@@ -28,7 +28,7 @@ Store your API key as an n8n credential so you don't repeat it across nodes.
 
 ### Upsert a pass
 
-Creates or updates a pass for a given template and pass ID.
+Creates or updates a pass for a given template and pass ID. An upsert replaces the whole pass, so the body must be the **complete** pass every time.
 
 **HTTP Request node settings:**
 
@@ -38,7 +38,7 @@ Creates or updates a pass for a given template and pass ID.
 | URL | `https://api.passform.io/v1/pass/{{ $json.templateId }}/{{ $json.passId }}` |
 | Body Content Type | JSON |
 
-**Example body:**
+**Example body — creating a pass:**
 ```json
 {
   "voided": false,
@@ -50,6 +50,10 @@ Creates or updates a pass for a given template and pass ID.
 ```
 
 The response includes `appleUrl`, `googleUrl`, and `webUrl` — use these to send the pass to your user.
+
+<Warning>
+  When you update an existing pass, anything you leave out of the body is cleared. If your workflow doesn't already hold all of the pass's values, add a [Get a pass](#get-a-pass) node first and build the body from its output, changing only what you need. See [updating passes](/guides/updating-passes) for a full example.
+</Warning>
 
 ---
 
@@ -91,7 +95,7 @@ Pushes an update notification to a pass already in a user's wallet.
 | Method | `GET` |
 | URL | `https://api.passform.io/v1/pass/{{ $json.templateId }}/passes` |
 
-Supports `limit`, `pageToken`, `sortBy`, and `sortOrder` query parameters.
+Supports `limit` (1-100, default 10), `pageToken`, `sortBy`, and `sortOrder` query parameters.
 
 ## Example workflows
 
@@ -103,14 +107,15 @@ Supports `limit`, `pageToken`, `sortBy`, and `sortOrder` query parameters.
   </Accordion>
   <Accordion title="Sync a CRM contact to a loyalty pass">
     1. **CRM trigger** (HubSpot, Salesforce, etc.) — contact updated
-    2. **HTTP Request** node — upsert pass with updated points/fields
-    3. **HTTP Request** node — `POST /notify` to alert the user their pass has changed
+    2. **HTTP Request** node — `GET` the pass to read its current values
+    3. **HTTP Request** node — upsert the complete pass with the updated points/fields
+    4. **HTTP Request** node — `POST /notify` to alert the user their pass has changed
   </Accordion>
   <Accordion title="Void passes on a schedule">
     1. **Schedule** trigger — runs daily
     2. **HTTP Request** node — `GET /v1/pass/{templateId}/passes` to fetch active passes
     3. **IF** node — filter passes past their expiry date
-    4. **HTTP Request** node — upsert with `"voided": true`
+    4. **HTTP Request** node — upsert each pass with its existing data plus `"voided": true`
   </Accordion>
 </AccordionGroup>
 

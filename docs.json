@@ -32,7 +32,16 @@
       },
       {
         "tab": "API reference",
-        "openapi": "/api-reference/openapi.json"
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": ["api-reference/introduction"]
+          },
+          {
+            "group": "Endpoints",
+            "openapi": "/api-reference/openapi.json"
+          }
+        ]
       }
     ],
     "global": {

@@ -33,6 +33,15 @@ Creates a new pass or updates an existing one for a given template and pass ID.
 | **Fields** | Up to 4 key/label/value fields shown on the front of the pass |
 | **Back Fields** | Key/label/value fields shown on the back of the pass |
 
+<Warning>
+  Upsert Pass replaces the whole pass each time it runs, using only the fields listed above.
+
+  - Map every one of those fields that the pass should keep, not only the ones that changed. Any field left empty is cleared.
+  - Values the action has no input for are removed from the pass. This includes a custom `code`, `primaryValue`, `metadata`, and `locations`.
+
+  Use this action to update passes that only use the fields above. For passes that rely on the other values, such as membership and generic passes, which need a `primaryValue`, update them through the [API](/guides/updating-passes) instead.
+</Warning>
+
 ## Example Zaps
 
 <AccordionGroup>
@@ -48,7 +57,7 @@ Creates a new pass or updates an existing one for a given template and pass ID.
 
     **Action:** Passform — Upsert Pass
 
-    Set **Pass ID** to the order ID and set **Voided** to `true`. The pass updates instantly in the customer's wallet.
+    Set **Pass ID** to the order ID, set **Voided** to `true`, and map the same field values you used when issuing the pass. The pass updates instantly in the customer's wallet.
   </Accordion>
   <Accordion title="Update a loyalty pass when points change">
     **Trigger:** Your CRM or loyalty platform — Contact Updated
