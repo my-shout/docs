@@ -37,6 +37,19 @@ Set it when creating or updating a template:
 
 If omitted, `barcodeFormat` defaults to `QR`.
 
+## Hiding the code text
+
+By default, Apple Wallet and Google Wallet show the pass's `code` as human-readable text beneath the barcode. Set `hideCodeText` to `true` on the template to hide that text — useful when the code is a long URL or an opaque token that means nothing to the holder.
+
+```json
+{
+  "barcodeFormat": "QR",
+  "hideCodeText": true
+}
+```
+
+The barcode itself is unaffected and still encodes the full `code`. Like `barcodeFormat`, `hideCodeText` is a template setting and applies to every pass issued from the template, including passes already in users' wallets.
+
 ## Code length and character limits
 
 Each format has a different data capacity, and 1D formats additionally restrict which characters they can encode reliably. Passform validates a pass's `code` against its template's `barcodeFormat` when the pass is created or updated, and rejects a `code` that doesn't fit.

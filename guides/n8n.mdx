@@ -51,6 +51,10 @@ Creates or updates a pass for a given template and pass ID.
 
 The response includes `appleUrl`, `googleUrl`, and `webUrl` — use these to send the pass to your user.
 
+<Note>
+  An upsert replaces the whole pass, so always send every field the pass should keep. See [updating passes](/guides/updating-passes).
+</Note>
+
 ---
 
 ### Get a pass
@@ -91,7 +95,7 @@ Pushes an update notification to a pass already in a user's wallet.
 | Method | `GET` |
 | URL | `https://api.passform.io/v1/pass/{{ $json.templateId }}/passes` |
 
-Supports `limit`, `pageToken`, `sortBy`, and `sortOrder` query parameters.
+Supports `limit` (1-100, default 10), `pageToken`, `sortBy`, and `sortOrder` query parameters.
 
 ## Example workflows
 
@@ -110,7 +114,7 @@ Supports `limit`, `pageToken`, `sortBy`, and `sortOrder` query parameters.
     1. **Schedule** trigger — runs daily
     2. **HTTP Request** node — `GET /v1/pass/{templateId}/passes` to fetch active passes
     3. **IF** node — filter passes past their expiry date
-    4. **HTTP Request** node — upsert with `"voided": true`
+    4. **HTTP Request** node — upsert each pass with its existing data plus `"voided": true`
   </Accordion>
 </AccordionGroup>
 

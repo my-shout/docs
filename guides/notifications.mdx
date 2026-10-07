@@ -1,23 +1,24 @@
 ---
 title: "Notifications"
-description: "How Apple Wallet and Google Wallet automatically surface passes at the right moment"
+description: "Surface passes at the right time and place, and push messages to pass holders"
 icon: "bell"
 ---
 
-Wallet passes can surface automatically on a user's lock screen without any action from you. Both Apple Wallet and Google Wallet use pass data to determine when a pass is relevant — prompting the user at the right time or place.
+There are two ways a pass reaches a user's lock screen:
 
-These notifications are triggered by the wallet app itself based on data embedded in the pass. No server-side action is required once the pass is issued.
+- **Automatic relevance** — Apple Wallet and Google Wallet use data embedded in the pass (expiry, event time, locations) to decide when it is relevant. No server-side action is required once the pass is issued.
+- **Push messages** — you send a title and message to a specific pass through the API.
 
 ---
 
 ## Expiry
 
-When a pass has an `expiry` date set, both Apple Wallet and Google Wallet will alert the user as the pass approaches its expiry.
+When a pass has an `expiry` date set, the wallets use it to show the user when the pass stops being valid.
 
-- **Apple Wallet** — surfaces the pass on the lock screen in the days leading up to expiry and displays a visible countdown on the pass face
-- **Google Wallet** — highlights the expiry date prominently on the pass
+- **Apple Wallet** — the pass is marked as expired once the date passes
+- **Google Wallet** — the pass's validity period is set from `validFrom` and `expiry`, and expired passes are moved out of the active list
 
-**Supported pass types:** Offer
+**Supported pass types:** all
 
 Set `expiry` when issuing a pass:
 
@@ -38,6 +39,7 @@ Set `expiry` when issuing a pass:
 Event passes are automatically surfaced on the user's lock screen as the event start time approaches.
 
 - **Apple Wallet** — shows the pass on the lock screen before and during the event window based on the `startDate`
+- **Google Wallet** — displays the event date and time on the ticket
 
 **Supported pass types:** Event
 
@@ -56,13 +58,47 @@ No additional configuration is needed — Apple Wallet handles the timing automa
 
 ## Location
 
-When a pass has a `location` set, Apple Wallet will surface the pass on the lock screen when the user's device is near that location.
+Add `locations` to surface a pass on the lock screen when the user's device is nearby — for example at your stores, venues, or branches.
 
-- **Apple Wallet** — shows a lock screen notification with the venue name when the user arrives in the vicinity
+- **Apple Wallet** — shows a lock screen notification with your message when the user arrives in the vicinity
+- **Google Wallet** — surfaces the pass when the user is near one of the locations. Google Wallet has no per-location message.
 
-**Supported pass types:** Event
+**Supported pass types:** all
 
-Add a `location` to the event template:
+Set `locations` on the template to apply them to every pass issued from it:
+
+```json
+{
+  "type": "membership",
+  "locations": [
+    {
+      "name": "Acme Queen St",
+      "address": "12 Queen St, Auckland",
+      "latitude": -36.848461,
+      "longitude": 174.763336,
+      "relevantText": "Show your card for 10% off today"
+    }
+  ]
+}
+```
+
+| Field | Required | Description |
+|---|---|---|
+| `address` | Yes | The address of the location |
+| `latitude` | Yes | Latitude of the location |
+| `longitude` | Yes | Longitude of the location |
+| `name` | No | A name for the location |
+| `relevantText` | No | Apple Wallet only - the message shown in the lock screen notification. Falls back to `name`, then `address`. |
+
+A template can have up to **10** locations.
+
+### Per-pass locations
+
+You can also set `locations` on an individual pass when you issue or update it. Pass locations are **added to** the template's locations — they don't replace them. Each wallet uses at most 10 locations per pass from the combined list.
+
+### Event venue
+
+Event templates also accept a single `location` for the venue. It works as a location trigger like the ones above, and the venue name and address are shown on the pass.
 
 ```json
 {
@@ -77,10 +113,33 @@ Add a `location` to the event template:
 }
 ```
 
-The `name` is shown in the lock screen prompt. `address` appears on the back of the pass. Both `latitude` and `longitude` are required for location-based triggering.
+---
+
+## Push messages
+
+Send a message to a specific pass with the notify endpoint. Use it for things like "Your reward is ready" or "Doors open in 30 minutes".
+
+```bash
+POST /v1/pass/{templateId}/{passId}/notify
+```
+
+```bash
+curl -X POST https://api.passform.io/v1/pass/my-membership-template/member-123/notify \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "notification": {
+      "title": "Your reward is ready",
+      "message": "You have 150 points - redeem in store today."
+    }
+  }'
+```
+
+- **Apple Wallet** — the message appears as a lock screen notification and is added to the back of the pass. The 10 most recent messages are kept on the pass.
+- **Google Wallet** — the message is added to the pass and the user is notified. Google limits each pass to 3 notifications in a 24 hour period.
 
 <Note>
-  Location notifications are an Apple Wallet feature only. Google Wallet does not support geofence-based pass surfacing.
+  A push message does not change the pass's data. To change what the pass displays, [update the pass](/guides/updating-passes) instead.
 </Note>
 
 ---
@@ -89,6 +148,7 @@ The `name` is shown in the lock screen prompt. `address` appears on the back of 
 
 | Trigger | Apple Wallet | Google Wallet | Pass types |
 |---|---|---|---|
-| Expiry approaching | Lock screen + countdown | Expiry highlighted | Offer |
-| Event time | Lock screen before event | — | Event |
-| Near venue | Lock screen on arrival | — | Event |
+| Expiry | Pass marked expired | Validity period set | All |
+| Event time | Lock screen before event | Date and time on ticket | Event |
+| Near a location | Lock screen with message | Pass surfaced nearby | All |
+| Push message | Lock screen + back of pass | Message + notification | All |

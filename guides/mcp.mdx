@@ -100,14 +100,19 @@ Add the MCP server in your editor's MCP settings:
 | Tool | Description |
 |------|-------------|
 | `listAccounts` | List all accounts you have access to, with full details |
+| `getAccount` | Get the details of a single account |
+| `inviteAccountMember` | Invite a user to an account by email |
+| `acceptAccountInvite` | Accept an invite to join an account |
 
 ### Templates
 
 | Tool | Description |
 |------|-------------|
 | `listTemplates` | List all templates for an account, with full details |
+| `listTemplatesPaged` | List templates with pagination and filtering by type |
 | `getTemplate` | Get a single template by ID |
 | `upsertTemplate` | Create or update a template |
+| `uploadTemplateImages` | Upload the images used by a template |
 
 ### Passes
 
@@ -117,5 +122,16 @@ Add the MCP server in your editor's MCP settings:
 | `listPasses` | List passes for a template, with pagination and sorting |
 | `getPass` | Get a specific pass |
 | `upsertPass` | Create or update a pass with a specific ID |
+| `movePassTemplate` | Move a pass to another template of the same type |
 | `notifyPass` | Send a push notification to a pass |
 | `updatePassMetadata` | Update pass metadata without triggering a wallet notification |
+| `getPassAppleWalletFile` | Get the Apple Wallet `.pkpass` file for a pass |
+| `getPassGoogleWalletUrl` | Get the Google Wallet save URL for a pass |
+| `getAppleWalletBundle` | Bundle up to 10 passes into a single Apple Wallet `.pkpasses` file |
+| `getGoogleWalletBundle` | Get a single Google Wallet save URL for multiple passes |
+
+### Memberships
+
+| Tool | Description |
+|------|-------------|
+| `getMembershipMember` | Get a membership member by their member ID |

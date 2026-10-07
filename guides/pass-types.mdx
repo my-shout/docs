@@ -81,8 +81,8 @@ The event type is built for ticketed events. It renders as an **Event Ticket** o
 **Features:**
 - **`startDate`** (required) - automatically displayed as separate date and time fields on the pass face; no manual field needed
 - **`location`** (optional) - provide an address with latitude/longitude to enable:
-  - Lock screen notification when the user arrives near the venue (Apple Wallet)
-  - Venue name and address shown on the back of the pass
+  - Lock screen notification when the user arrives near the venue
+  - Venue name and address shown on the pass
 - **`relevantDates`** - Apple Wallet surfaces the pass on the lock screen around the event start time
 - Header field automatically set to the event title
 - Supports up to 4 additional front fields for seat, row, section, gate, or other event-specific details
@@ -183,8 +183,9 @@ The generic type is a flexible pass that doesn't carry any built-in field assump
 - Any pass that doesn't map cleanly to an offer, event, or membership
 
 **Features:**
-- **`primaryLabel`** - label for the primary value displayed prominently on the pass face
-- **`thumbnail`** *(Apple Wallet only)* - a square image (90 × 90 px at 1×) shown alongside the primary field instead of the banner image; useful for a profile photo or product image
+- **`primaryLabel`** (required) - label for the primary value displayed prominently on the pass face
+- **`primaryValue`** on each issued pass - the individual value shown for that pass holder
+- **`thumbnail`** (required, displayed in Apple Wallet only) - a square image (90 × 90 px at 1×) shown alongside the primary field instead of the banner image; useful for a profile photo or product image
 - Up to 4 front fields for any custom content
 - Back fields for supplementary information
 
@@ -227,7 +228,9 @@ All pass types share the following base fields:
 | `backFields` | No | Fields shown on the back of the pass (tap to flip) |
 | `sharingProhibited` | No | Disable sharing from mobile wallet apps |
 | `barcodeFormat` | No | Barcode format for the pass code - `QR` (default), `PDF417`, `Aztec`, or `Code128` |
+| `hideCodeText` | No | Hide the human-readable code shown beneath the barcode |
+| `locations` | No | Up to 10 locations that surface the pass on the lock screen when the user is nearby |
 
 When you issue a pass, the response includes `appleUrl`, `googleUrl`, and `webUrl` so you can distribute the same pass to Apple Wallet, Google Wallet, or Passform's browser-based web viewer.
 
-See the [image dimensions guide](/guides/image-dimensions) for recommended sizes for `icon`, `logo`, `banner`, and `thumbnail`, and the [barcode types guide](/guides/barcode-types) for choosing a `barcodeFormat` and its code length limits.
+See the [image dimensions guide](/guides/image-dimensions) for recommended sizes for `icon`, `logo`, `banner`, and `thumbnail`, the [barcode types guide](/guides/barcode-types) for choosing a `barcodeFormat` and its code length limits, and the [notifications guide](/guides/notifications#location) for setting up `locations`.

@@ -1,6 +1,6 @@
 ---
 title: "Updating passes"
-description: "Update individual passes and push template changes to all holders"
+description: "Update individual passes, move them between templates, and push template changes to all holders"
 icon: "arrows-rotate"
 ---
 
@@ -16,19 +16,25 @@ Use the same endpoint to create and update a pass — it behaves as an upsert. C
 POST /v1/pass/{templateId}/{passId}
 ```
 
-Any field you include replaces the current value. Fields you omit are left unchanged.
+<Warning>
+  An upsert **replaces the whole pass**. Send every field you want the pass to keep, not just the ones that changed. Fields you omit are reset: `fields`, `backFields`, `locations`, `primaryValue`, and `metadata` are removed, `expiry` and `validFrom` are cleared, `voided` returns to `false`, and `code` falls back to the pass ID.
+</Warning>
 
-**Updatable fields:**
+If you don't hold the current pass data, fetch it first with `GET /v1/pass/{templateId}/{passId}`, change what you need, and send the result back.
+
+**Pass fields:**
 
 | Field | Description |
 |---|---|
-| `fields` | The fields displayed on the front of the pass |
-| `backFields` | Fields shown on the back of the pass |
+| `fields` | The fields displayed on the front of the pass. Each `key` must exist on the template. |
+| `backFields` | Fields shown on the back of the pass. Each `key` must exist on the template. |
 | `primaryValue` | The primary value displayed on membership and generic passes |
-| `expiry` | Pass expiry date — set to `null` to remove |
+| `expiry` | Pass expiry date — omit or set to `null` for no expiry |
 | `validFrom` | Date from which the pass becomes valid |
 | `voided` | Set to `true` to void the pass |
-| `code` | The barcode/QR code value. Must fit the length and character limits of the template's `barcodeFormat` - see [barcode types](/guides/barcode-types). |
+| `code` | The barcode/QR code value. Defaults to the pass ID. Must fit the length and character limits of the template's `barcodeFormat` - see [barcode types](/guides/barcode-types). |
+| `locations` | Up to 10 locations that surface this pass on the lock screen, added to the template's locations - see [notifications](/guides/notifications#location) |
+| `metadata` | Free-form data for your own use - see [metadata](#metadata) |
 
 **Example — update a membership points balance:**
 
@@ -38,6 +44,7 @@ curl -X POST https://api.passform.io/v1/pass/my-membership-template/member-123 \
   -H "Content-Type: application/json" \
   -d '{
     "primaryValue": "1,850",
+    "expiry": "2027-06-30T23:59:59Z",
     "fields": [
       { "key": "tier", "label": "Tier", "value": "Gold" }
     ]
@@ -46,12 +53,18 @@ curl -X POST https://api.passform.io/v1/pass/my-membership-template/member-123 \
 
 **Example — void a pass:**
 
+Include the pass's existing data alongside `voided` so the voided pass keeps its content.
+
 ```bash
 curl -X POST https://api.passform.io/v1/pass/my-offer-template/pass-456 \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "voided": true
+    "voided": true,
+    "expiry": "2026-12-31T23:59:59Z",
+    "fields": [
+      { "key": "discount", "label": "Discount", "value": "20% off" }
+    ]
   }'
 ```
 
@@ -64,6 +77,38 @@ After a pass is updated, Passform automatically notifies both wallets:
 
 No additional API calls are needed to trigger this — it happens automatically on every upsert.
 
+By default the wallet updates are queued and the API responds as soon as the pass is saved. Set `waitForWalletUpdates` to `true` in the request body to have the API wait until both wallets have been notified before it responds.
+
+To show the user a lock-screen message alongside a change, see [push messages](/guides/notifications#push-messages).
+
+---
+
+## Moving a pass to another template
+
+Move a pass to a different template of the **same type** — for example from a "Silver" membership template to a "Gold" one. The pass keeps its ID and all of its field values, and the copies already installed in Apple Wallet and Google Wallet are updated in place rather than replaced.
+
+```bash
+POST /v1/pass/{templateId}/{passId}/move
+```
+
+```bash
+curl -X POST https://api.passform.io/v1/pass/silver-members/member-123/move \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: move-member-123-to-gold" \
+  -d '{
+    "toTemplateId": "gold-members"
+  }'
+```
+
+After the move the pass lives at `/v1/pass/gold-members/member-123`. To change field values as well, follow up with an upsert at the new template.
+
+<Note>
+  A move removes the pass from its original template, so retrying a request that already succeeded returns a `404`. Send an `Idempotency-Key` header with a unique value per move — a retry with the same key replays the original response instead.
+</Note>
+
+The API returns `400` if the two templates have different types, and `409` if a pass with the same ID already exists on the destination template.
+
 ---
 
 ## Updating a template
@@ -73,6 +118,8 @@ Updating a template changes the **appearance and shared content** of every pass 
 ```bash
 POST /v1/templates/{templateId}
 ```
+
+The request must always include the template's required fields, even when you're only changing one of them.
 
 **Example — update a template's banner image:**
 
@@ -102,26 +149,30 @@ When a template is updated, Passform:
 
 This means a single template update can refresh the look and feel of thousands of passes at once — useful for seasonal rebrands, updated artwork, or correcting a typo in shared content.
 
+### Archiving a template
+
+Archive a template you no longer need with `POST /v1/templates/{templateId}/archive`. This voids every pass issued from the template and blocks new passes from being created on it.
+
 ### Pass data vs template data
 
 Template updates affect shared design and default content only. Per-pass data — `fields`, `primaryValue`, `expiry`, `voided` — is stored on the individual pass and is not affected by template updates.
 
 | Changed on | Affects |
 |---|---|
-| Template | Colors, images, logo, title, issuer name, default fields |
-| Pass | `fields`, `backFields`, `primaryValue`, `expiry`, `validFrom`, `voided`, `code` |
+| Template | Colors, images, logo, title, issuer name, default fields, barcode format, locations |
+| Pass | `fields`, `backFields`, `primaryValue`, `expiry`, `validFrom`, `voided`, `code`, `locations` |
 
 ---
 
 ## Metadata
 
-Metadata is a free-form object you can attach to a pass for your own tracking purposes. It is not displayed in the wallet.
+Metadata is a free-form object you can attach to a pass for your own tracking purposes. It is not displayed in the wallet, and is limited to 5,000 characters when serialized to JSON.
 
 ```bash
 PATCH /v1/pass/{templateId}/{passId}/metadata
 ```
 
-Updating metadata does **not** trigger a wallet push — it is a silent server-side change only.
+Updating metadata through this endpoint does **not** trigger a wallet push — it is a silent server-side change only, and it leaves the rest of the pass untouched.
 
 ```bash
 curl -X PATCH https://api.passform.io/v1/pass/my-template/pass-123/metadata \
@@ -134,3 +185,7 @@ curl -X PATCH https://api.passform.io/v1/pass/my-template/pass-123/metadata \
     }
   }'
 ```
+
+<Note>
+  Metadata is also part of the pass upsert body. Because an upsert replaces the whole pass, upserting without `metadata` removes any metadata already stored on the pass.
+</Note>
