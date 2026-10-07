@@ -38,33 +38,78 @@ If you don't hold the current pass data, fetch it first with `GET /v1/pass/{temp
 
 **Example — update a membership points balance:**
 
+Read the pass so you have its current values:
+
+```bash
+curl https://api.passform.io/v1/pass/my-membership-template/member-123 \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+Then send the complete pass back with the new `primaryValue`. Every other value is repeated unchanged, including the ones you aren't updating:
+
 ```bash
 curl -X POST https://api.passform.io/v1/pass/my-membership-template/member-123 \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "primaryValue": "1,850",
+    "code": "MEM-000123",
+    "validFrom": null,
     "expiry": "2027-06-30T23:59:59Z",
+    "voided": false,
     "fields": [
       { "key": "tier", "label": "Tier", "value": "Gold" }
-    ]
+    ],
+    "backFields": [
+      { "key": "joined", "label": "Member since", "value": "March 2024" }
+    ],
+    "locations": [
+      {
+        "name": "Acme Queen St",
+        "address": "12 Queen St, Auckland",
+        "latitude": -36.848461,
+        "longitude": 174.763336
+      }
+    ],
+    "metadata": {
+      "customerId": "cust_abc123"
+    }
   }'
 ```
 
+You only need to send the fields your pass actually uses. A pass that has never had `backFields`, `locations`, or `metadata` set has nothing to lose by omitting them.
+
 **Example — void a pass:**
 
-Include the pass's existing data alongside `voided` so the voided pass keeps its content.
+Voiding works the same way: send the complete pass with `voided` set to `true`, so the voided pass keeps its content.
 
 ```bash
-curl -X POST https://api.passform.io/v1/pass/my-offer-template/pass-456 \
+curl -X POST https://api.passform.io/v1/pass/my-membership-template/member-123 \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "voided": true,
-    "expiry": "2026-12-31T23:59:59Z",
+    "primaryValue": "1,850",
+    "code": "MEM-000123",
+    "validFrom": null,
+    "expiry": "2027-06-30T23:59:59Z",
     "fields": [
-      { "key": "discount", "label": "Discount", "value": "20% off" }
-    ]
+      { "key": "tier", "label": "Tier", "value": "Gold" }
+    ],
+    "backFields": [
+      { "key": "joined", "label": "Member since", "value": "March 2024" }
+    ],
+    "locations": [
+      {
+        "name": "Acme Queen St",
+        "address": "12 Queen St, Auckland",
+        "latitude": -36.848461,
+        "longitude": 174.763336
+      }
+    ],
+    "metadata": {
+      "customerId": "cust_abc123"
+    }
   }'
 ```
 
@@ -104,7 +149,7 @@ curl -X POST https://api.passform.io/v1/pass/silver-members/member-123/move \
 After the move the pass lives at `/v1/pass/gold-members/member-123`. To change field values as well, follow up with an upsert at the new template.
 
 <Note>
-  A move removes the pass from its original template, so retrying a request that already succeeded returns a `404`. Send an `Idempotency-Key` header with a unique value per move — a retry with the same key replays the original response instead.
+  A move removes the pass from its original template, so retrying a request that already succeeded returns a `404`. To make retries safe, send the optional `Idempotency-Key` header with a unique value per move — a retry with the same key replays the original response instead.
 </Note>
 
 The API returns `400` if the two templates have different types, and `409` if a pass with the same ID already exists on the destination template.
